@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, TrendingUp, FileText, CheckCircle2, AlertTriangle } from 'lucide-react';
-import { Project, mockPhases } from '@/lib/mockData';
+import { X, TrendingUp, FileText, CheckCircle2, AlertTriangle, Clock, User, AlertCircle as AlertCircleIcon } from 'lucide-react';
+import { Project, mockPhases, mockTasks } from '@/lib/mockData';
 
 interface ProjectDetailModalProps {
   project: Project;
@@ -70,10 +70,7 @@ export default function ProjectDetailModal({ project, onClose }: ProjectDetailMo
             <ProjectOverview project={project} />
           )}
           {activeTab === 'tasks' && (
-            <div className="text-center text-gray-500 py-12">
-              <FileText size={48} className="mx-auto mb-4 text-gray-300" />
-              <p>Vista de tareas en desarrollo</p>
-            </div>
+            <ProjectTasks projectId={project.id} />
           )}
           {activeTab === 'timeline' && (
             <div className="text-center text-gray-500 py-12">
@@ -205,6 +202,148 @@ function MetricCard({ title, value, icon, color }: MetricCardProps) {
           {icon}
         </div>
       </div>
+    </div>
+  );
+}
+
+// Componente de Lista de Tareas
+function ProjectTasks({ projectId }: { projectId: string }) {
+  // Por ahora mostramos todas las tareas mockeadas
+  // En producción filtrarías por projectId
+  const tasks = mockTasks;
+
+  const getStatusBadge = (status: string) => {
+    const badges = {
+      'Done': { color: 'bg-green-100 text-green-700 border-green-200', label: 'Completada' },
+      'In Progress': { color: 'bg-blue-100 text-blue-700 border-blue-200', label: 'En Progreso' },
+      'Blocked': { color: 'bg-red-100 text-red-700 border-red-200', label: 'Bloqueada' },
+      'Pending': { color: 'bg-gray-100 text-gray-700 border-gray-200', label: 'Pendiente' },
+    };
+    return badges[status as keyof typeof badges] || badges['Pending'];
+  };
+
+  const getUrgencyColor = (urgency: string) => {
+    const colors = {
+      'Overdue': 'text-red-600',
+      'Risk': 'text-orange-600',
+      'On Track': 'text-green-600',
+      'Blocked': 'text-red-600',
+      'Done': 'text-gray-400',
+    };
+    return colors[urgency as keyof typeof colors] || 'text-gray-600';
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold text-gray-900">
+          Lista de Tareas ({tasks.length})
+        </h3>
+      </div>
+
+      {/* Lista de Tareas */}
+      <div className="space-y-3">
+        {tasks.map((task) => {
+          const statusBadge = getStatusBadge(task.status);
+          const urgencyColor = getUrgencyColor(task.urgency_status);
+
+          return (
+            <div
+              key={task.id}
+              className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+            >
+              {/* Header de la Tarea */}
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h4 className="font-medium text-gray-900">{task.title}</h4>
+                    {task.is_blocker && (
+                      <span className="px-2 py-0.5 bg-orange-100 text-orange-700 text-xs font-medium rounded">
+                        Bloqueante
+                      </span>
+                    )}
+                    {task.is_deliverable && (
+                      <FileText size={14} className="text-blue-600" title="Requiere entregable" />
+                    )}
+                  </div>
+                  {task.description && (
+                    <p className="text-sm text-gray-600">{task.description}</p>
+                  )}
+                </div>
+                
+                {/* Badge de Estado */}
+                <span className={`px-3 py-1 rounded-full text-xs font-medium border ${statusBadge.color}`}>
+                  {statusBadge.label}
+                </span>
+              </div>
+
+              {/* Detalles de la Tarea */}
+              <div className="grid grid-cols-3 gap-4 pt-3 border-t border-gray-100">
+                {/* Responsable */}
+                <div className="flex items-center gap-2">
+                  <User size={16} className="text-gray-400" />
+                  <div>
+                    <p className="text-xs text-gray-500">Responsable</p>
+                    <p className="text-sm font-medium text-gray-900">{task.assigned_entity_name}</p>
+                  </div>
+                </div>
+
+                {/* Fecha Límite */}
+                <div className="flex items-center gap-2">
+                  <Clock size={16} className="text-gray-400" />
+                  <div>
+                    <p className="text-xs text-gray-500">Fecha Límite</p>
+                    <p className={`text-sm font-medium ${urgencyColor}`}>
+                      {new Date(task.planned_end_date).toLocaleDateString('es-ES', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric'
+                      })}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Estado de Urgencia */}
+                <div className="flex items-center gap-2">
+                  <AlertCircleIcon size={16} className="text-gray-400" />
+                  <div>
+                    <p className="text-xs text-gray-500">Urgencia</p>
+                    <p className={`text-sm font-medium ${urgencyColor}`}>
+                      {task.urgency_status === 'On Track' && '✓ A tiempo'}
+                      {task.urgency_status === 'Risk' && '⚠️ En riesgo'}
+                      {task.urgency_status === 'Overdue' && '🔴 Vencida'}
+                      {task.urgency_status === 'Blocked' && '🛑 Bloqueada'}
+                      {task.urgency_status === 'Done' && '✅ Completada'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Información de Bloqueo si aplica */}
+              {task.status === 'Blocked' && task.responsible_person_name && (
+                <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="flex items-start gap-2">
+                    <AlertCircleIcon size={16} className="text-red-600 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-red-900">Tarea Bloqueada</p>
+                      <p className="text-xs text-red-700 mt-1">
+                        Responsable del bloqueo: <span className="font-semibold">{task.responsible_person_name}</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {tasks.length === 0 && (
+        <div className="text-center py-12">
+          <FileText size={48} className="mx-auto mb-4 text-gray-300" />
+          <p className="text-gray-500">No hay tareas registradas para este proyecto</p>
+        </div>
+      )}
     </div>
   );
 }
