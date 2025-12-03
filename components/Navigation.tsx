@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Kanban, Settings, Bell } from 'lucide-react';
+import { LayoutDashboard, Kanban, Settings, Bell, BarChart3 } from 'lucide-react';
 
 export default function Navigation() {
   const pathname = usePathname();
@@ -11,6 +11,7 @@ export default function Navigation() {
   const navItems = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/', label: 'Kanban Board', icon: Kanban },
+    { href: '/metrics', label: 'Métricas', icon: BarChart3 },
   ];
 
   return (
