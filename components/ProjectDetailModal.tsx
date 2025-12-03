@@ -260,7 +260,7 @@ function ProjectTasks({ projectId }: { projectId: string }) {
                       </span>
                     )}
                     {task.is_deliverable && (
-                      <FileText size={14} className="text-blue-600" title="Requiere entregable" />
+                      <FileText size={14} className="text-blue-600" />
                     )}
                   </div>
                   {task.description && (
