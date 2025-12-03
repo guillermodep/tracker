@@ -73,10 +73,7 @@ export default function ProjectDetailModal({ project, onClose }: ProjectDetailMo
             <ProjectTasks projectId={project.id} />
           )}
           {activeTab === 'timeline' && (
-            <div className="text-center text-gray-500 py-12">
-              <TrendingUp size={48} className="mx-auto mb-4 text-gray-300" />
-              <p>Timeline en desarrollo</p>
-            </div>
+            <ProjectTimeline project={project} />
           )}
         </div>
       </div>
@@ -344,6 +341,205 @@ function ProjectTasks({ projectId }: { projectId: string }) {
           <p className="text-gray-500">No hay tareas registradas para este proyecto</p>
         </div>
       )}
+    </div>
+  );
+}
+
+// Componente de Timeline del Proyecto
+function ProjectTimeline({ project }: { project: Project }) {
+  // Generar eventos del timeline basados en el proyecto
+  const timelineEvents = [
+    {
+      id: '1',
+      date: '2024-12-01',
+      type: 'created',
+      title: 'Proyecto Creado',
+      description: `Proyecto "${project.app_name}" iniciado`,
+      icon: '🚀',
+      color: 'blue',
+    },
+    {
+      id: '2',
+      date: '2024-12-15',
+      type: 'phase_change',
+      title: `Fase: ${project.status}`,
+      description: `El proyecto avanzó a la fase de ${project.status}`,
+      icon: '📊',
+      color: 'purple',
+    },
+    {
+      id: '3',
+      date: '2025-01-05',
+      type: 'milestone',
+      title: `${project.completion_rate}% Completado`,
+      description: `${project.completed_tasks} de ${project.total_tasks} tareas completadas`,
+      icon: '✅',
+      color: 'green',
+    },
+  ];
+
+  // Agregar evento de bloqueo si hay tareas bloqueadas
+  if (project.blocked_tasks > 0) {
+    timelineEvents.push({
+      id: '4',
+      date: '2025-01-10',
+      type: 'blocked',
+      title: 'Tareas Bloqueadas',
+      description: `${project.blocked_tasks} tareas están bloqueadas y requieren atención`,
+      icon: '🛑',
+      color: 'red',
+    });
+  }
+
+  // Agregar evento de riesgo si aplica
+  if (project.risk_level === 'CRITICAL' || project.risk_level === 'WARNING') {
+    timelineEvents.push({
+      id: '5',
+      date: '2025-01-12',
+      type: 'risk',
+      title: `Alerta: Nivel de Riesgo ${project.risk_level}`,
+      description: `Health Score: ${project.health_score}/100. Se requiere atención inmediata.`,
+      icon: project.risk_level === 'CRITICAL' ? '🔴' : '🟡',
+      color: project.risk_level === 'CRITICAL' ? 'red' : 'orange',
+    });
+  }
+
+  // Agregar fecha objetivo
+  timelineEvents.push({
+    id: '6',
+    date: project.target_end_date,
+    type: 'target',
+    title: 'Fecha Objetivo',
+    description: 'Fecha estimada de finalización del proyecto',
+    icon: '🎯',
+    color: 'indigo',
+  });
+
+  // Ordenar eventos por fecha
+  const sortedEvents = [...timelineEvents].sort((a, b) => 
+    new Date(a.date).getTime() - new Date(b.date).getTime()
+  );
+
+  const getColorClasses = (color: string) => {
+    const colors = {
+      blue: 'bg-blue-100 text-blue-700 border-blue-300',
+      purple: 'bg-purple-100 text-purple-700 border-purple-300',
+      green: 'bg-green-100 text-green-700 border-green-300',
+      red: 'bg-red-100 text-red-700 border-red-300',
+      orange: 'bg-orange-100 text-orange-700 border-orange-300',
+      indigo: 'bg-indigo-100 text-indigo-700 border-indigo-300',
+    };
+    return colors[color as keyof typeof colors] || colors.blue;
+  };
+
+  const getLineColor = (color: string) => {
+    const colors = {
+      blue: 'bg-blue-300',
+      purple: 'bg-purple-300',
+      green: 'bg-green-300',
+      red: 'bg-red-300',
+      orange: 'bg-orange-300',
+      indigo: 'bg-indigo-300',
+    };
+    return colors[color as keyof typeof colors] || colors.blue;
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900">Timeline del Proyecto</h3>
+          <p className="text-sm text-gray-500 mt-1">Historial de eventos y milestones</p>
+        </div>
+      </div>
+
+      {/* Timeline */}
+      <div className="relative">
+        {sortedEvents.map((event, index) => {
+          const isLast = index === sortedEvents.length - 1;
+          const colorClasses = getColorClasses(event.color);
+          const lineColor = getLineColor(event.color);
+
+          return (
+            <div key={event.id} className="relative pb-8">
+              {/* Línea conectora */}
+              {!isLast && (
+                <div className={`absolute left-6 top-12 w-0.5 h-full ${lineColor}`} />
+              )}
+
+              {/* Evento */}
+              <div className="relative flex items-start gap-4">
+                {/* Icono del evento */}
+                <div className={`flex-shrink-0 w-12 h-12 rounded-full border-4 border-white ${colorClasses} flex items-center justify-center text-xl shadow-md z-10`}>
+                  {event.icon}
+                </div>
+
+                {/* Contenido del evento */}
+                <div className="flex-1 bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-gray-900">{event.title}</h4>
+                      <p className="text-sm text-gray-600 mt-1">{event.description}</p>
+                    </div>
+                    <span className="text-xs text-gray-500 font-medium">
+                      {new Date(event.date).toLocaleDateString('es-ES', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric'
+                      })}
+                    </span>
+                  </div>
+
+                  {/* Información adicional según el tipo */}
+                  {event.type === 'milestone' && (
+                    <div className="mt-3 pt-3 border-t border-gray-100">
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 bg-gray-200 rounded-full h-2">
+                          <div
+                            className="bg-green-500 h-2 rounded-full transition-all"
+                            style={{ width: `${project.completion_rate}%` }}
+                          />
+                        </div>
+                        <span className="text-xs font-semibold text-gray-700">
+                          {project.completion_rate}%
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {event.type === 'risk' && (
+                    <div className="mt-3 pt-3 border-t border-gray-100">
+                      <div className="flex items-center gap-2 text-sm">
+                        <span className="text-gray-600">Health Score:</span>
+                        <span className={`font-semibold ${
+                          project.health_score >= 70 ? 'text-green-600' :
+                          project.health_score >= 50 ? 'text-orange-600' :
+                          'text-red-600'
+                        }`}>
+                          {project.health_score}/100
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Información del Project Manager */}
+      <div className="mt-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+            <User size={20} className="text-blue-600" />
+          </div>
+          <div>
+            <p className="text-sm text-gray-500">Project Manager</p>
+            <p className="font-semibold text-gray-900">{project.project_manager}</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
