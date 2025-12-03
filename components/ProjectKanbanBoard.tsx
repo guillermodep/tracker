@@ -24,6 +24,13 @@ export default function ProjectKanbanBoard() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [createTaskModalOpen, setCreateTaskModalOpen] = useState(false);
   const [selectedProjectForTask, setSelectedProjectForTask] = useState<Project | null>(null);
+  
+  // Filtros
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterPM, setFilterPM] = useState('all');
+  const [filterRisk, setFilterRisk] = useState('all');
+  const [filterPhase, setFilterPhase] = useState('all');
+  const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
 
   useEffect(() => {
     // Simular carga de datos

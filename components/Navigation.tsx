@@ -3,14 +3,16 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Kanban, Settings, Bell, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, Kanban, Settings, Bell, BarChart3, Calendar, LineChart } from 'lucide-react';
 
 export default function Navigation() {
   const pathname = usePathname();
 
   const navItems = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/', label: 'Kanban Board', icon: Kanban },
+    { href: '/', label: 'Kanban', icon: Kanban },
+    { href: '/gantt', label: 'Gantt', icon: Calendar },
+    { href: '/charts', label: 'Gráficos', icon: LineChart },
     { href: '/metrics', label: 'Métricas', icon: BarChart3 },
   ];
 

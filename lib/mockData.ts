@@ -10,6 +10,7 @@ export interface Project {
   total_tasks: number;
   completed_tasks: number;
   project_manager: string;
+  start_date?: string;
   target_end_date: string;
   health_score: number;
   risk_level: 'HEALTHY' | 'WARNING' | 'CRITICAL';
